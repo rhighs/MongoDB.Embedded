@@ -18,15 +18,27 @@ namespace MongoDB.Embedded
 
         private readonly int _port;
         private readonly string _path;
+        private string _db_path;
         private readonly string _name;
         private readonly int _processEndTimeout;
         private readonly ManualResetEventSlim _gate = new ManualResetEventSlim(false);
 
-        public EmbeddedMongoDbServer(string logPath = null)
+        private string os64()
         {
+            if (Environment.Is64BitOperatingSystem)
+                return "mongod64.exe";
+            else
+                return "mongod32.exe";
+        }
+
+        public EmbeddedMongoDbServer(string logPath = null, string db_path = "db")
+        {
+            _db_path = db_path;
             _port = GetRandomUnusedPort();
 
             _processEndTimeout = 10000;
+
+            Directory.CreateDirectory(_db_path);
 
             KillMongoDbProcesses(_processEndTimeout);
 
@@ -34,7 +46,8 @@ namespace MongoDB.Embedded
             _path = Path.Combine(Path.GetTempPath(), RandomFileName(12));
             Directory.CreateDirectory(_path);
 
-            using (var resourceStream = typeof(EmbeddedMongoDbServer).Assembly.GetManifestResourceStream(typeof(EmbeddedMongoDbServer), "mongod.exe"))
+
+            using (var resourceStream = typeof(EmbeddedMongoDbServer).Assembly.GetManifestResourceStream(typeof(EmbeddedMongoDbServer), os64()))
             using (var fileStream = new FileStream(Path.Combine(_path, _name + ".exe"), FileMode.Create, FileAccess.Write))
             {
                 resourceStream.CopyTo(fileStream);
@@ -60,7 +73,7 @@ namespace MongoDB.Embedded
             {
                 StartInfo =
                 {
-                    Arguments = string.Format(format, _path, _port, logPath),
+                    Arguments = string.Format(format, _db_path, _port, logPath),
                     UseShellExecute = false,
                     ErrorDialog = false,
                     LoadUserProfile = false,
