@@ -19,6 +19,7 @@ namespace MongoDB.Embedded
         private readonly int _port;
         private readonly string _path;
         private string _db_path;
+        private string _logPath;
         private readonly string _name;
         private readonly int _processEndTimeout;
         private readonly ManualResetEventSlim _gate = new ManualResetEventSlim(false);
@@ -33,17 +34,14 @@ namespace MongoDB.Embedded
 
         public EmbeddedMongoDbServer(string logPath = null, string db_path = "db")
         {
-            _db_path = db_path;
+            _db_path =$"{Environment.CurrentDirectory}\\{db_path}";
             _port = GetRandomUnusedPort();
-
+            _logPath = $"{Environment.CurrentDirectory}\\{logPath}";
             _processEndTimeout = 10000;
-
             Directory.CreateDirectory(_db_path);
-
             KillMongoDbProcesses(_processEndTimeout);
-
             _name = RandomFileName(7);
-            _path = Path.Combine(Path.GetTempPath(), RandomFileName(12));
+            _path = Path.Combine(Path.GetTempPath(), RandomFileName(12));;
             Directory.CreateDirectory(_path);
 
 
@@ -65,8 +63,6 @@ namespace MongoDB.Embedded
                     if (logPath != null)
                         format += " --journal --logpath {2}.log";
                     break;
-
-
                 default:
                     break;
             }
@@ -75,7 +71,7 @@ namespace MongoDB.Embedded
             {
                 StartInfo =
                 {
-                    Arguments = string.Format(format, _db_path, _port, logPath),
+                    Arguments = string.Format(format, _db_path, _port, _logPath),
                     UseShellExecute = false,
                     ErrorDialog = false,
                     LoadUserProfile = false,
