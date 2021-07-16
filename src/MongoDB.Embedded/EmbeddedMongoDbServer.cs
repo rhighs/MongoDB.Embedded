@@ -19,6 +19,7 @@ namespace MongoDB.Embedded
         private readonly int _port;
         private readonly string _path;
         private string _db_path;
+        private string _logPath;
         private readonly string _name;
         private readonly int _processEndTimeout;
         private readonly ManualResetEventSlim _gate = new ManualResetEventSlim(false);
@@ -33,17 +34,14 @@ namespace MongoDB.Embedded
 
         public EmbeddedMongoDbServer(string logPath = null, string db_path = "db")
         {
-            _db_path = db_path;
+            _db_path =$"{Environment.CurrentDirectory}\\{db_path}";
             _port = GetRandomUnusedPort();
-
+            _logPath = $"{Environment.CurrentDirectory}\\{logPath}";
             _processEndTimeout = 10000;
-
             Directory.CreateDirectory(_db_path);
-
             KillMongoDbProcesses(_processEndTimeout);
-
             _name = RandomFileName(7);
-            _path = Path.Combine(Path.GetTempPath(), RandomFileName(12));
+            _path = Path.Combine(Path.GetTempPath(), RandomFileName(12));;
             Directory.CreateDirectory(_path);
 
 
@@ -52,28 +50,28 @@ namespace MongoDB.Embedded
             {
                 resourceStream.CopyTo(fileStream);
             }
-
-            using (var resourceStream = typeof(EmbeddedMongoDbServer).Assembly.GetManifestResourceStream(typeof(EmbeddedMongoDbServer), "libeay32.dll"))
-            using (var fileStream = new FileStream(Path.Combine(_path, "libeay32.dll"), FileMode.Create, FileAccess.Write))
+            string format = string.Empty;
+            switch (os64())
             {
-                resourceStream.CopyTo(fileStream);
+                case "mongod32.exe":
+                    format += "--dbpath {0} --smallfiles --bind_ip 127.0.0.1 --storageEngine=mmapv1 --port {1}";
+                    if (logPath != null)
+                        format += " --journal --logpath {2}.log";
+                    break;
+                case "mongod64.exe":
+                    format += "--dbpath {0} --bind_ip 127.0.0.1 --port {1}";
+                    if (logPath != null)
+                        format += " --journal --logpath {2}.log";
+                    break;
+                default:
+                    break;
             }
-
-            using (var resourceStream = typeof(EmbeddedMongoDbServer).Assembly.GetManifestResourceStream(typeof(EmbeddedMongoDbServer), "ssleay32.dll"))
-            using (var fileStream = new FileStream(Path.Combine(_path, "ssleay32.dll"), FileMode.Create, FileAccess.Write))
-            {
-                resourceStream.CopyTo(fileStream);
-            }
-
-            var format = "--dbpath \"{0}\" --logappend --smallfiles --bind_ip 127.0.0.1 --port {1}";
-            if (logPath != null)
-                format += " --logpath {2}";
 
             _process = new Process
             {
                 StartInfo =
                 {
-                    Arguments = string.Format(format, _db_path, _port, logPath),
+                    Arguments = string.Format(format, _db_path, _port, _logPath),
                     UseShellExecute = false,
                     ErrorDialog = false,
                     LoadUserProfile = false,

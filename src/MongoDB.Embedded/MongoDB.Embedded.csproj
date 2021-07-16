@@ -62,14 +62,9 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="libeay32.dll" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <EmbeddedResource Include="mongod32.exe" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="ssleay32.dll" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="mongod64.exe" />
