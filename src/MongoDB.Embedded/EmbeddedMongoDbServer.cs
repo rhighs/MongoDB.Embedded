@@ -52,22 +52,24 @@ namespace MongoDB.Embedded
             {
                 resourceStream.CopyTo(fileStream);
             }
-
-            using (var resourceStream = typeof(EmbeddedMongoDbServer).Assembly.GetManifestResourceStream(typeof(EmbeddedMongoDbServer), "libeay32.dll"))
-            using (var fileStream = new FileStream(Path.Combine(_path, "libeay32.dll"), FileMode.Create, FileAccess.Write))
+            string format = string.Empty;
+            switch (os64())
             {
-                resourceStream.CopyTo(fileStream);
-            }
+                case "mongod32.exe":
+                    format += "--dbpath {0} --smallfiles --bind_ip 127.0.0.1 --storageEngine=mmapv1 --port {1}";
+                    if (logPath != null)
+                        format += " --journal --logpath {2}.log";
+                    break;
+                case "mongod64.exe":
+                    format += "--dbpath {0} --bind_ip 127.0.0.1 --port {1}";
+                    if (logPath != null)
+                        format += " --journal --logpath {2}.log";
+                    break;
 
-            using (var resourceStream = typeof(EmbeddedMongoDbServer).Assembly.GetManifestResourceStream(typeof(EmbeddedMongoDbServer), "ssleay32.dll"))
-            using (var fileStream = new FileStream(Path.Combine(_path, "ssleay32.dll"), FileMode.Create, FileAccess.Write))
-            {
-                resourceStream.CopyTo(fileStream);
-            }
 
-            var format = "--dbpath \"{0}\" --logappend --smallfiles --bind_ip 127.0.0.1 --port {1}";
-            if (logPath != null)
-                format += " --logpath {2}";
+                default:
+                    break;
+            }
 
             _process = new Process
             {
