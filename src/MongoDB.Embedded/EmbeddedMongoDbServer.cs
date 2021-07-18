@@ -22,14 +22,56 @@ namespace MongoDB.Embedded
         private string _logPath;
         private readonly string _name;
         private readonly int _processEndTimeout;
+        private string format = string.Empty;
         private readonly ManualResetEventSlim _gate = new ManualResetEventSlim(false);
 
-        private string os64()
+        private bool os64()
         {
             if (Environment.Is64BitOperatingSystem)
-                return "mongod64.exe";
+                return true;
             else
-                return "mongod32.exe";
+                return false;
+        }
+
+        private string CheckWindowsVersion()
+        {
+            var windowsBuildNumber = libz.GetWindowsBuildNumber();
+            if (windowsBuildNumber < 7600)
+                throw new Exception(@"Минимальная версия WINDOWS - 7");
+
+            if (windowsBuildNumber >= 10000)
+            {
+                if (os64())
+                    return "mongod_5_x64.exe";
+                else
+                    return "mongod_3_x32.exe";
+            }
+            else if (windowsBuildNumber >=7600 || windowsBuildNumber >=9600 && windowsBuildNumber < 10000)
+            {
+                if (os64())
+                    return "mongod_4_2_x64.exe";
+                else
+                    return "mongod_3_x32.exe";
+            }
+            return "";
+        }
+
+        private void CopyEmbededFiles(string FName)
+        {
+            using (var resourceStream = typeof(EmbeddedMongoDbServer).Assembly.GetManifestResourceStream(typeof(EmbeddedMongoDbServer), FName))
+            using (var fileStream = new FileStream(Path.Combine(_path, FName), FileMode.Create, FileAccess.Write))
+            {
+                resourceStream.CopyTo(fileStream);
+            }
+        }
+
+        private void CopyEmbededFiles(string FName, string SName)
+        {
+            using (var resourceStream = typeof(EmbeddedMongoDbServer).Assembly.GetManifestResourceStream(typeof(EmbeddedMongoDbServer), FName))
+            using (var fileStream = new FileStream(Path.Combine(_path, SName + ".exe"), FileMode.Create, FileAccess.Write))
+            {
+                resourceStream.CopyTo(fileStream);
+            }
         }
 
         public EmbeddedMongoDbServer(string logPath = null, string db_path = "db")
@@ -41,24 +83,17 @@ namespace MongoDB.Embedded
             Directory.CreateDirectory(_db_path);
             KillMongoDbProcesses(_processEndTimeout);
             _name = RandomFileName(7);
-            _path = Path.Combine(Path.GetTempPath(), RandomFileName(12));;
+            _path = Path.Combine(Path.GetTempPath(), RandomFileName(12));
             Directory.CreateDirectory(_path);
 
-
-            using (var resourceStream = typeof(EmbeddedMongoDbServer).Assembly.GetManifestResourceStream(typeof(EmbeddedMongoDbServer), os64()))
-            using (var fileStream = new FileStream(Path.Combine(_path, _name + ".exe"), FileMode.Create, FileAccess.Write))
-            {
-                resourceStream.CopyTo(fileStream);
-            }
-            string format = string.Empty;
             switch (os64())
             {
-                case "mongod32.exe":
+                case false:
                     format += "--dbpath {0} --smallfiles --bind_ip 127.0.0.1 --storageEngine=mmapv1 --port {1}";
                     if (logPath != null)
                         format += " --journal --logpath {2}.log";
                     break;
-                case "mongod64.exe":
+                case true:
                     format += "--dbpath {0} --bind_ip 127.0.0.1 --port {1}";
                     if (logPath != null)
                         format += " --journal --logpath {2}.log";
@@ -67,22 +102,28 @@ namespace MongoDB.Embedded
                     break;
             }
 
+            Start_Server();
+        }
+
+        private void Start_Server()
+        {
+            CopyEmbededFiles(CheckWindowsVersion(), _name);
             _process = new Process
             {
                 StartInfo =
-                {
-                    Arguments = string.Format(format, _db_path, _port, _logPath),
-                    UseShellExecute = false,
-                    ErrorDialog = false,
-                    LoadUserProfile = false,
-                    WindowStyle = ProcessWindowStyle.Hidden,
-                    CreateNoWindow = true,
-                    RedirectStandardError = true,
-                    RedirectStandardInput = false,
-                    RedirectStandardOutput = true,
-                    FileName = Path.Combine(_path, _name + ".exe"),
-                    WorkingDirectory = _path
-                }
+            {
+                Arguments = string.Format(format, _db_path, _port, _logPath),
+                UseShellExecute = false,
+                ErrorDialog = false,
+                LoadUserProfile = false,
+                WindowStyle = ProcessWindowStyle.Hidden,
+                CreateNoWindow = true,
+                RedirectStandardError = true,
+                RedirectStandardInput = false,
+                RedirectStandardOutput = true,
+                FileName = Path.Combine(_path, _name + ".exe"),
+                WorkingDirectory = _path
+            }
             };
 
             _process.OutputDataReceived += ProcessOutputDataReceived;
@@ -94,7 +135,7 @@ namespace MongoDB.Embedded
             _process.BeginOutputReadLine();
             _process.BeginErrorReadLine();
 
-            _gate.Wait(10000);
+            _gate.Wait(8000);
         }
 
         public MongoClientSettings Settings

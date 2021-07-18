@@ -30,7 +30,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <SignAssembly>false</SignAssembly>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>MongoDB.EmbeddedMulti.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="MongoDB.Bson, Version=2.2.4.26, Culture=neutral, processorArchitecture=MSIL">
@@ -57,17 +60,21 @@
   <ItemGroup>
     <Compile Include="EmbeddedMongoDbServer.cs" />
     <Compile Include="Job.cs" />
+    <Compile Include="libz.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="MongoDB.EmbeddedMulti.snk" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
-    <EmbeddedResource Include="mongod32.exe" />
+    <Content Include="mongod_4_2_x64.exe" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="mongod64.exe" />
+    <EmbeddedResource Include="mongod_3_x32.exe" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="mongod_5_x64.exe" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
