@@ -34,4 +34,4 @@ using System.Runtime.InteropServices;
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("2.0.1.6158")]
 [assembly: AssemblyFileVersion("2.0.1.6158")]
-[assembly: InternalsVisibleTo("MongoDB.Embedded.Tests")]
+//[assembly: InternalsVisibleTo("MongoDB.Embedded.Tests")]
