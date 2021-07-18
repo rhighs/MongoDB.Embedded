@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <title>$title$</title>
+    <authors>$author$</authors>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <license type="expression">MIT</license>
+    <projectUrl>https://github.com/VSS-DEV/MongoDB.Embedded</projectUrl>
+   <!-- <iconUrl>http://icon_url_here_or_delete_this_line/</iconUrl>-->
+    <description>$description$</description>
+    <releaseNotes>First Pub on Nuget</releaseNotes>
+    <copyright>$copyright$</copyright>
+    <tags>MongoDB.EmbeddedMulti MongoDB.Embedded</tags>
+  </metadata>
+</package>

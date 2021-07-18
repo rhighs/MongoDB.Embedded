@@ -6,9 +6,9 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("MongoDB.Embedded")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("MongoDB.EmbeddedMulti")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("MongoDB.Embedded")]
 [assembly: AssemblyProduct("MongoDB.Embedded")]
 [assembly: AssemblyCopyright("Copyright ©  2016-2021")]
 [assembly: AssemblyTrademark("")]
