@@ -8,6 +8,7 @@
     <RepositoryUrl>https://github.com/VSS-DEV/MongoDB.Embedded</RepositoryUrl>
     <PackageReleaseNotes>Переход на netstandard2.0</PackageReleaseNotes>
     <RootNamespace>MongoDB.Embedded</RootNamespace>
+    <PackageId>MongoDB.EmbeddedMulti</PackageId>
   </PropertyGroup>
 
   <ItemGroup>
