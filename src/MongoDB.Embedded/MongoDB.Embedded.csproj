@@ -6,7 +6,7 @@
     <Version>2.1.1.6480</Version>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <RepositoryUrl>https://github.com/VSS-DEV/MongoDB.Embedded</RepositoryUrl>
-    <PackageReleaseNotes>Исправление ошибки инициализации втроенного ресурса. На каждой системе работает по разному.</PackageReleaseNotes>
+    <PackageReleaseNotes>Исправление ошибки инициализации встроенного ресурса. На каждой системе работает по разному.</PackageReleaseNotes>
     <RootNamespace>MongoDB.Embedded</RootNamespace>
     <PackageId>MongoDB.EmbeddedMulti</PackageId>
     <Description>Встраиваемая библиотека для запуска сервера MongoDB NetStandard2.0 Edition.
