@@ -3,12 +3,18 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>MongoDB.Embedded</AssemblyName>
-    <Version>2.1.0.6478</Version>
+    <Version>2.1.1.6480</Version>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <RepositoryUrl>https://github.com/VSS-DEV/MongoDB.Embedded</RepositoryUrl>
-    <PackageReleaseNotes>Переход на netstandard2.0</PackageReleaseNotes>
+    <PackageReleaseNotes>Исправление ошибки инициализации втроенного ресурса. На каждой системе работает по разному.</PackageReleaseNotes>
     <RootNamespace>MongoDB.Embedded</RootNamespace>
     <PackageId>MongoDB.EmbeddedMulti</PackageId>
+    <Description>Встраиваемая библиотека для запуска сервера MongoDB NetStandard2.0 Edition.
+Включает в себя версии:
+MongoDB v3.x для 32-bit версий Windows 7 или выше;
+MongoDB v4.2.х для 64-bit версий Windows 7 и Windows 8.1;
+MongoDB v5.х для 64-bit версий Windows 10 или выше;
+Использует библиотеку MongoDB.Driver v. 2.13.0</Description>
   </PropertyGroup>
 
   <ItemGroup>

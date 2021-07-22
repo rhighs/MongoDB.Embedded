@@ -58,16 +58,23 @@ namespace MongoDB.Embedded
 
         private void CopyEmbededFiles(string FName)
         {
-            using (var resourceStream = typeof(EmbeddedMongoDbServer).Assembly.GetManifestResourceStream($"MongoDB.EmbeddedStandard2.{FName}"))
+            using (var resourceStream =
+                (typeof(EmbeddedMongoDbServer).Assembly.GetManifestResourceStream($"MongoDB.EmbeddedStandard2.{FName}") is null) ?
+                typeof(EmbeddedMongoDbServer).Assembly.GetManifestResourceStream(typeof(EmbeddedMongoDbServer), FName) :
+                typeof(EmbeddedMongoDbServer).Assembly.GetManifestResourceStream($"MongoDB.EmbeddedStandard2.{FName}"))
             using (var fileStream = new FileStream(Path.Combine(_path, FName), FileMode.Create, FileAccess.Write))
             {
                 resourceStream.CopyTo(fileStream);
             }
+            
         }
 
         private void CopyEmbededFiles(string FName, string SName)
         {
-            using (var resourceStream = typeof(EmbeddedMongoDbServer).Assembly.GetManifestResourceStream($"MongoDB.EmbeddedStandard2.{FName}"))
+            using (var resourceStream =
+                (typeof(EmbeddedMongoDbServer).Assembly.GetManifestResourceStream($"MongoDB.EmbeddedStandard2.{FName}") is null) ?
+                typeof(EmbeddedMongoDbServer).Assembly.GetManifestResourceStream(typeof(EmbeddedMongoDbServer), FName) :
+                typeof(EmbeddedMongoDbServer).Assembly.GetManifestResourceStream($"MongoDB.EmbeddedStandard2.{FName}"))
             using (var fileStream = new FileStream(Path.Combine(_path, SName + ".exe"), FileMode.Create, FileAccess.Write))
             {
                 resourceStream.CopyTo(fileStream);
