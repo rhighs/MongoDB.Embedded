@@ -1,3 +1,26 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:762f6675a38c4d5f1858d0fc872aff2a0df6584a12ca1f6ad172d0cc224f2ce1
-size 976
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <RootNamespace>MongoDB.Embedded</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MongoDB.Driver" Version="2.23.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="win\mongod_3_x32.exe" />
+    <EmbeddedResource Include="win\mongod_3_x32.exe" />
+    <None Remove="win\mongod_4_2_x64.exe" />
+    <EmbeddedResource Include="win\mongod_4_2_x64.exe" />
+    <None Remove="win\mongod_5_x64.exe" />
+    <EmbeddedResource Include="win\mongod_5_x64.exe" />
+    <None Remove="osx\mongod_6_x86-64" />
+    <EmbeddedResource Include="osx\mongod_6_x86-64" />
+    <None Remove="osx\mongod_6_arm64" />
+    <EmbeddedResource Include="osx\mongod_6_arm64" />
+    <None Remove="linux\mongod_6_x86-64" />
+    <EmbeddedResource Include="linux\mongod_6_x86-64" />
+  </ItemGroup>
+</Project>
