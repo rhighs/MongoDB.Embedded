@@ -6,7 +6,7 @@ A .NET package that provides an easy way to integrate and manage a MongoDB serve
 
 #### 1. Installation
 
-To install EmbeddedMongoDbServer, you can use NuGet package manager. The following command will install the package into your project:
+To install Server, you can use NuGet package manager. The following command will install the package into your project:
 
 ```
 Install-Package MongoDB.Embedded.CrossPlatform
@@ -14,14 +14,14 @@ Install-Package MongoDB.Embedded.CrossPlatform
 
 #### 2. Basic Usage
 
-Here is a simple example of how to use EmbeddedMongoDbServer to start a MongoDB instance and perform basic operations:
+Here is a simple example of how to use Server to start a MongoDB instance and perform basic operations:
 
 ```csharp
 using MongoDB.Embedded;
 using MongoDB.Driver;
 
 // Initialize the embedded MongoDB server
-using (var embeddedServer = new EmbeddedMongoDbServer())
+using (var embeddedServer = new Server())
 {
     // Get the MongoClient
     var client = embeddedServer.Client;
@@ -33,32 +33,32 @@ using (var embeddedServer = new EmbeddedMongoDbServer())
 }
 ```
 
-The `EmbeddedMongoDbServer` instance takes care of setting up and tearing down the MongoDB server automatically.
+The `Server` instance takes care of setting up and tearing down the MongoDB server automatically.
 
 #### 3. Advanced Configuration
 
-EmbeddedMongoDbServer offers several configuration options to tailor the MongoDB instance to your needs, such as setting custom database paths, enabling logging, and more.
+Server offers several configuration options to tailor the MongoDB instance to your needs, such as setting custom database paths, enabling logging, and more.
 
 ```csharp
 using MongoDB.Embedded;
 
-var customSettings = new EmbeddedMongoDbServerSettings
+var customSettings = new ServerSettings
 {
     LogPath = "path/to/your/logs",
     DatabasePath = "path/to/your/database",
     LogEnabled = true
 };
 
-using (var embeddedServer = new EmbeddedMongoDbServer(customSettings))
+using (var embeddedServer = new Server(customSettings))
 {
     IMongoClient client = embeddedServer.Client;
     // Your code to interact with the mongodb client, already setup and connected!
 }
 ```
 
-### Testing with EmbeddedMongoDbServer
+### Testing with Server
 
-EmbeddedMongoDbServer is ideal for integration testing, allowing you to run tests against a real MongoDB instance with minimal setup. Here's an example of how you might write tests:
+Server is ideal for integration testing, allowing you to run tests against a real MongoDB instance with minimal setup. Here's an example of how you might write tests:
 
 ```csharp
 using MongoDB.Driver;
@@ -70,7 +70,7 @@ public class MongoDBTests
     [Fact]
     public void BasicStartupTest()
     {
-        using (var embedded = new EmbeddedMongoDbServer())
+        using (var embedded = new Server())
         {
             var client = embedded.Client;
             // Perform tests using the client...
@@ -80,7 +80,7 @@ public class MongoDBTests
     [Fact]
     public async Task ReadWriteTest()
     {
-        using (var embedded = new EmbeddedMongoDbServer())
+        using (var embedded = new Server())
         {
             var client = embedded.Client;
             var db = client.GetDatabase("test");
