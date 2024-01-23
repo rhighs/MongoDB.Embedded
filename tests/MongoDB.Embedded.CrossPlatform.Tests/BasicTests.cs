@@ -1,7 +1,7 @@
 ﻿using MongoDB.Driver;
 using Xunit;
 
-namespace MongoDB.Embedded.Tests
+namespace MongoDB.Embedded.CrossPlatform.Tests
 {
     public class BasicTests
     {

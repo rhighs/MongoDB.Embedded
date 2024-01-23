@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\MongoDB.Embedded\MongoDB.Embedded.csproj" />
+    <ProjectReference Include="..\..\src\MongoDB.Embedded.CrossPlatform\MongoDB.Embedded.CrossPlatform.csproj" />
   </ItemGroup>
 
 </Project>

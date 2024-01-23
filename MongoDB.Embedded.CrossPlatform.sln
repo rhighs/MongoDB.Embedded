@@ -1,0 +1,36 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A735148C-2DDD-47A5-A91C-D8C5193725B0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MongoDB.Embedded.CrossPlatform", "src\MongoDB.Embedded.CrossPlatform\MongoDB.Embedded.CrossPlatform.csproj", "{00B31AFF-A71D-4CB1-8CAA-C1DF3FF9BE79}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{E6851165-8C12-4464-B34E-C231E6183D64}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MongoDB.Embedded.CrossPlatform.Tests", "tests\MongoDB.Embedded.CrossPlatform.Tests\MongoDB.Embedded.CrossPlatform.Tests.csproj", "{3230DF61-8B44-4F9E-9C90-F5E30CB1DBF0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{00B31AFF-A71D-4CB1-8CAA-C1DF3FF9BE79}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00B31AFF-A71D-4CB1-8CAA-C1DF3FF9BE79}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00B31AFF-A71D-4CB1-8CAA-C1DF3FF9BE79}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00B31AFF-A71D-4CB1-8CAA-C1DF3FF9BE79}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3230DF61-8B44-4F9E-9C90-F5E30CB1DBF0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3230DF61-8B44-4F9E-9C90-F5E30CB1DBF0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3230DF61-8B44-4F9E-9C90-F5E30CB1DBF0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3230DF61-8B44-4F9E-9C90-F5E30CB1DBF0}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{00B31AFF-A71D-4CB1-8CAA-C1DF3FF9BE79} = {A735148C-2DDD-47A5-A91C-D8C5193725B0}
+		{3230DF61-8B44-4F9E-9C90-F5E30CB1DBF0} = {E6851165-8C12-4464-B34E-C231E6183D64}
+	EndGlobalSection
+EndGlobal

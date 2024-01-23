@@ -7,7 +7,7 @@ using System.Text;
 using Microsoft.Win32;
 using MongoDB.Driver;
 
-namespace MongoDB.Embedded
+namespace MongoDB.Embedded.CrossPlatform
 {
     public class EmbeddedMongoDbServer : IDisposable
     {
@@ -167,7 +167,7 @@ namespace MongoDB.Embedded
             using (
                 var resourceStream =
                     typeof(EmbeddedMongoDbServer).Assembly.GetManifestResourceStream(
-                        $"MongoDB.Embedded.{FName}"
+                        $"MongoDB.Embedded.CrossPlatform.{FName}"
                     )
             )
             using (
