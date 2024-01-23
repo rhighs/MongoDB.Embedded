@@ -1,18 +1,18 @@
-﻿using System.Net;
-using System.Text;
-using MongoDB.Driver;
-using System.Diagnostics;
+﻿using System.Diagnostics;
+using System.Net;
 using System.Net.Sockets;
-using System.Security.Cryptography;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
+using System.Text;
+using Microsoft.Win32;
+using MongoDB.Driver;
 
 namespace MongoDB.Embedded
 {
     public class EmbeddedMongoDbServer : IDisposable
     {
-        private Process _process;
+        private Process? _process;
 
-        // Instance settings
         private bool _logEnabled = false;
         private readonly int _port = 0;
         private readonly string _path = "";
@@ -22,6 +22,7 @@ namespace MongoDB.Embedded
         private readonly ManualResetEventSlim _gate = new ManualResetEventSlim(false);
         private OSPlatform _platform = OSPlatform.Windows;
         private Architecture _arch = Architecture.X64;
+
         private string PlatformExeExt() => _platform == OSPlatform.Windows ? ".exe" : "";
 
         private bool Is64BitSystem() =>
@@ -96,10 +97,12 @@ namespace MongoDB.Embedded
 
             if (_platform != OSPlatform.Windows)
             {
+#pragma warning disable CA1416
                 File.SetUnixFileMode(
                     processFileName,
                     UnixFileMode.UserExecute | UnixFileMode.UserRead | UnixFileMode.UserWrite
                 );
+#pragma warning restore CA1416
             }
 
             var startInfo = new ProcessStartInfo
@@ -118,7 +121,9 @@ namespace MongoDB.Embedded
 
             if (_platform == OSPlatform.Windows)
             {
+#pragma warning disable CA1416
                 startInfo.LoadUserProfile = false;
+#pragma warning restore CA1416
             }
 
             _process = new Process { StartInfo = startInfo };
@@ -134,7 +139,7 @@ namespace MongoDB.Embedded
 
         private string CheckWindowsVersion()
         {
-            var windowsBuildNumber = libz.GetWindowsBuildNumber();
+            var windowsBuildNumber = GetWindowsBuildNumber();
             if (windowsBuildNumber < 7600)
             {
                 throw new Exception("Windows 7 is not supported yet!");
@@ -157,6 +162,7 @@ namespace MongoDB.Embedded
 
         private void CopyEmbededFiles(string FName, string SName)
         {
+#pragma warning disable CS8602
             var dstStreamPath = Path.Combine(_path, SName + PlatformExeExt());
             using (
                 var resourceStream =
@@ -170,6 +176,7 @@ namespace MongoDB.Embedded
             {
                 resourceStream.CopyTo(fileStream);
             }
+#pragma warning restore CS8602
         }
 
         private string ResolveExecutablePath()
@@ -209,11 +216,7 @@ namespace MongoDB.Embedded
         private static string RandomFileName(int length)
         {
             var chars = "abcdefghijklmnopqrstuvwxyz1234567890".ToCharArray();
-            var data = new byte[1];
-            var crypto = new RNGCryptoServiceProvider();
-            crypto.GetNonZeroBytes(data);
-            data = new byte[length];
-            crypto.GetNonZeroBytes(data);
+            var data = RandomNumberGenerator.GetBytes(length);
             var result = new StringBuilder(length);
             foreach (byte b in data)
             {
@@ -319,6 +322,43 @@ namespace MongoDB.Embedded
             {
                 Console.WriteLine($"[Rhighs.MongoDB.Embedded | INFO]: {message}");
             }
+        }
+
+        internal static int GetWindowsBuildNumber()
+        {
+#pragma warning disable CA1416
+            var subKey = @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\";
+            var keyName = "CurrentBuildNumber";
+            using (var rkSubKey = Registry.LocalMachine.OpenSubKey(subKey))
+            {
+                if (rkSubKey == null)
+                    throw new Exception(
+                        string.Format(
+                            @"Error while reading registry key: {0}\{1} does not exist!",
+                            subKey,
+                            keyName
+                        )
+                    );
+
+                try
+                {
+                    var result = rkSubKey.GetValue(keyName);
+                    rkSubKey.Close();
+                    return Convert.ToInt32(result);
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception(
+                        string.Format(
+                            "Error while reading registry key: {0} param: {1}. ErrorMessage: {2}",
+                            subKey,
+                            keyName,
+                            ex.Message
+                        )
+                    );
+                }
+            }
+#pragma warning restore CA1416
         }
     }
 }
