@@ -16,7 +16,6 @@ public class Server : IDisposable
     private bool _logEnabled = false;
     private readonly int _port = 0;
     private readonly string _path = "";
-    private string _db_path = "";
     private readonly string _name = "";
     private readonly int PROCESS_END_TIMEOUT = 10000;
     private readonly ManualResetEventSlim _gate = new ManualResetEventSlim(false);
@@ -30,6 +29,8 @@ public class Server : IDisposable
         || _arch == Architecture.Arm64
         || Environment.Is64BitOperatingSystem;
 
+    public bool Active { get; private set; } = false;
+
     private string CheckLinuxVersion() => "linux.mongod_6_x86-64";
 
     private string CheckOSXVersion() =>
@@ -37,13 +38,17 @@ public class Server : IDisposable
             ? "osx.mongod_6_arm64"
             : "osx.mongod_6_x86-64";
 
+    private Action<string>? _logAction = null;
+
     public Server(
         string? logPath = null,
-        string db_path = "db",
+        string dbPath = "db",
         bool logEnabled = false,
-        Action<string> logAction = null
-    ){
+        Action<string>? logAction = null
+    )
+    {
         logAction ??= (string message) => Console.WriteLine(message);
+        _logAction = logAction;
 
         _logEnabled = logEnabled;
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
@@ -56,30 +61,30 @@ public class Server : IDisposable
         }
         _arch = RuntimeInformation.OSArchitecture;
 
-        var workingDir = $"{Directory.GetCurrentDirectory()}\\{RandomFileName(7)}";
-        if (_platform == OSPlatform.Windows)
-        {
-            _db_path = $"{workingDir}\\{db_path}";
-            if (logPath == null)
-            {
-                logPath = $"{workingDir}\\logs";
-            }
-        }
-        else
-        {
-            _db_path = $"{workingDir}/{db_path}";
-            if (logPath == null)
-            {
-                logPath = $"{workingDir}/logs";
-            }
-        }
+        var workingDir = $"{Directory.GetCurrentDirectory()}";
 
         _port = GetRandomUnusedPort();
-        Directory.CreateDirectory(_db_path);
         KillMongoDbProcesses(PROCESS_END_TIMEOUT);
         _name = RandomFileName(7);
-        _path = Path.Combine(Directory.GetCurrentDirectory(), RandomFileName(12));
-        Directory.CreateDirectory(_path);
+        _path = Path.Combine(workingDir, RandomFileName(12));
+        dbPath = Path.Combine(_path, dbPath);
+        if (logPath == null)
+        {
+            logPath = Path.Combine(_path, "logs");
+        }
+
+        {
+            Directory.CreateDirectory(_path);
+            _logAction($"working path created: {_path}");
+        }
+        {
+            Directory.CreateDirectory(logPath);
+            _logAction($"logging path created: {logPath}");
+        }
+        {
+            Directory.CreateDirectory(dbPath);
+            _logAction($"logging path created: {dbPath}");
+        }
 
         string format = Is64BitSystem() switch
         {
@@ -96,6 +101,7 @@ public class Server : IDisposable
         string executablePath = ResolveExecutablePath();
         CopyEmbededFiles(executablePath, _name);
         var processFileName = Path.Combine(_path, _name + PlatformExeExt());
+        _logAction($"embedded data copied at: {processFileName}");
 
         if (_platform != OSPlatform.Windows)
         {
@@ -111,7 +117,7 @@ public class Server : IDisposable
         {
             FileName = processFileName,
             WorkingDirectory = _path,
-            Arguments = string.Format(format, _db_path, _port, logPath),
+            Arguments = string.Format(format, dbPath, _port, logPath),
             UseShellExecute = false,
             ErrorDialog = false,
             WindowStyle = ProcessWindowStyle.Hidden,
@@ -135,6 +141,8 @@ public class Server : IDisposable
         _process.BeginOutputReadLine();
         _process.BeginErrorReadLine();
         _gate.Wait(8000);
+
+        Active = true;
     }
 
     ~Server() => Dispose();
@@ -243,6 +251,7 @@ public class Server : IDisposable
                 }
 
                 _process.Dispose();
+                Active = false;
             }
             catch (Exception exception)
             {
@@ -259,10 +268,12 @@ public class Server : IDisposable
 
         if (Directory.Exists(_path))
         {
+            _logAction($"deleting working path: {_path}");
             Directory.Delete(_path, true);
         }
     }
 
+#pragma warning disable CS8602, CS8604
     private void KillMongoDbProcesses(int millisTimeout)
     {
         var processesByName = Process.GetProcessesByName("mongod.exe");
@@ -284,6 +295,7 @@ public class Server : IDisposable
                 );
                 Trace.TraceWarning(message);
                 LogInCurrentStdout(message);
+                _logAction(message);
             }
         }
     }
@@ -296,6 +308,7 @@ public class Server : IDisposable
             var logMe = string.Format("Err - {0}", e.Data);
             Trace.WriteLine(logMe);
             LogInCurrentStdout(logMe);
+            _logAction(logMe);
         }
     }
 
@@ -309,8 +322,10 @@ public class Server : IDisposable
             var logMe = string.Format("Output - {0}", e.Data);
             Trace.WriteLine(logMe);
             LogInCurrentStdout(logMe);
+            _logAction(logMe);
         }
     }
+#pragma warning restore CS8602, CS8604
 
     private void LogInCurrentStdout(string message)
     {

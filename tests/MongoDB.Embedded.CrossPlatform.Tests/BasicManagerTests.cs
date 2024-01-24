@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 using Xunit;
@@ -17,7 +18,7 @@ public class ManagedServerInstanceTests
     {
         using (var manager = new ManagedServerInstance())
         {
-            using var instance = manager.Instance;
+            var instance = manager.Instance;
             Assert.NotNull(instance);
             var client = instance.Client;
             Assert.NotNull(client);
@@ -29,10 +30,14 @@ public class ManagedServerInstanceTests
     {
         using (var manager = new ManagedServerInstance())
         {
-            using var instance = manager.Instance;
+            var instance = manager.Instance;
             var client = instance.Client;
             var db = client.GetDatabase("test");
             Assert.NotNull(db);
+            var collectionNames = db.ListCollectionNames().ToList();
+            if (collectionNames.Contains("testCollection")) {
+                db.DropCollection("testCollection");
+            }
             await db.CreateCollectionAsync("testCollection");
             var collections = await (await db.ListCollectionsAsync()).ToListAsync();
             Assert.Contains(collections, c => c["name"] == "testCollection");
@@ -44,7 +49,7 @@ public class ManagedServerInstanceTests
     {
         using (var manager = new ManagedServerInstance())
         {
-            using var instance = manager.Instance;
+            var instance = manager.Instance;
             var client = instance.Client;
             var db = client.GetDatabase("test");
             var collection = db.GetCollection<TestClass>("testCollection");
@@ -53,6 +58,7 @@ public class ManagedServerInstanceTests
 
             Assert.NotNull(retrieved);
             Assert.Equal("Test Value", retrieved.TestValue);
+            await collection.DeleteManyAsync(FilterDefinition<TestClass>.Empty);
         }
     }
 
@@ -61,12 +67,11 @@ public class ManagedServerInstanceTests
     {
         using (var manager = new ManagedServerInstance())
         {
-            using var instance = manager.Instance;
+            var instance = manager.Instance;
             var client = instance.Client;
             var db = client.GetDatabase("test");
             var collection = db.GetCollection<TestClass>("testCollection");
 
-            // Insert multiple documents
             await collection.InsertManyAsync(
                 new[]
                 {
@@ -75,7 +80,6 @@ public class ManagedServerInstanceTests
                 }
             );
 
-            // Retrieve and assert
             var retrievedFirst = await collection.Find(x => x.Id == 1).SingleOrDefaultAsync();
             var retrievedSecond = await collection.Find(x => x.Id == 2).SingleOrDefaultAsync();
 
@@ -83,6 +87,15 @@ public class ManagedServerInstanceTests
             Assert.Equal("First Value", retrievedFirst.TestValue);
             Assert.NotNull(retrievedSecond);
             Assert.Equal("Second Value", retrievedSecond.TestValue);
+        }
+    }
+
+    [Fact]
+    public void CleanupSeverInstance()
+    {
+        using (var manager = new ManagedServerInstance())
+        {
+            manager.TeardownServer();
         }
     }
 }

@@ -34,7 +34,7 @@ public class ManagedServerInstance : IDisposable
         _memberName = memberName;
         _filePath = filePath;
         _lineNumber = lineNumber;
-        if (_server == null)
+        if (_server == null || !_server.Active)
         {
             using var loggerFactory = LoggerFactory.Create(builder =>
             {
@@ -45,20 +45,24 @@ public class ManagedServerInstance : IDisposable
                 logEnabled: true,
                 logAction: (string message) =>
                     _logger.LogInformation(
-                        $"[ManagedServerIstance -> {_filePath}:{_lineNumber}]: {message}"
+                        $"[ManagedServerIstance -> {_filePath}:{_memberName}:{_lineNumber}]: {message}"
                     )
             );
         }
     }
 
+#pragma warning disable CS8602, CS8604
     public void Dispose()
     {
-#pragma warning disable CS8602, CS8604
         _logger.LogInformation(
-            $"[ManagedServerIstance -> {_filePath}:{_lineNumber}]: disposing server manager..."
+            $"[ManagedServerIstance -> {_filePath}:{_memberName}:{_lineNumber}]: disposing server manager"
         );
-#pragma warning restore CS8602, CS8604
     }
+
+    public void TeardownServer() {
+        _server.Dispose();
+    }
+#pragma warning restore CS8602, CS8604
 
     ~ManagedServerInstance() => Dispose();
 }
