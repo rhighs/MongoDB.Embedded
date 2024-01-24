@@ -9,57 +9,84 @@ A .NET package that provides an easy way to integrate and manage a MongoDB serve
 To install Server, you can use NuGet package manager. The following command will install the package into your project:
 
 ```
-Install-Package MongoDB.Embedded.CrossPlatform
+Install-Package rhighs.MongoDB.Embedded.CrossPlatform
 ```
 
-#### 2. Basic Usage
+### Example case scenarios
 
-Here is a simple example of how to use Server to start a MongoDB instance and perform basic operations:
+#### Basic Operations
 
 ```csharp
-using MongoDB.Embedded;
+using MongoDB.Embedded.Crossplatform;
 using MongoDB.Driver;
 
-// Initialize the embedded MongoDB server
+// Start the embedded MongoDB server
 using (var embeddedServer = new Server())
 {
-    // Get the MongoClient
     var client = embeddedServer.Client;
-
-    // Use the client as you would normally...
-    var database = client.GetDatabase("yourDatabase");
+    var database = client.GetDatabase("test");
     var collection = database.GetCollection<YourDataType>("yourCollection");
-    // Perform operations (CRUD) on the collection
-}
+    {
+        // perform some operations...
+    }
+} // <-- server teardown, all data is deleted
 ```
 
-The `Server` instance takes care of setting up and tearing down the MongoDB server automatically.
+#### Dual Server Operations
 
-#### 3. Advanced Configuration
-
-Server offers several configuration options to tailor the MongoDB instance to your needs, such as setting custom database paths, enabling logging, and more.
-
+Simultaneously operate two MongoDB servers, showcasing the package's ability to handle multiple instances:
 ```csharp
-using MongoDB.Embedded;
+using MongoDB.Embedded.Crossplatform;
+using MongoDB.Driver;
 
-var customSettings = new ServerSettings
+using (var server1 = new Server())
+using (var server2 = new Server())
 {
-    LogPath = "path/to/your/logs",
-    DatabasePath = "path/to/your/database",
-    LogEnabled = true
-};
+    var client1 = server1.Client;
+    var db1 = client1.GetDatabase("test");
+    var collection1 = db1.GetCollection<YourDataType>("yourCollection");
 
-using (var embeddedServer = new Server(customSettings))
-{
-    IMongoClient client = embeddedServer.Client;
-    // Your code to interact with the mongodb client, already setup and connected!
+    var client2 = server2.Client;
+    var db2 = client2.GetDatabase("test");
+    var collection2 = db2.GetCollection<YourDataType>("yourCollection");
+
+    {
+        // perform operations using both servers...
+    }
 }
 ```
+You could really do as much as you want, given you got enough memory in your system and you don't run out of ports to be used.
+In fact, every `new Server()` will allocate a new mongod binary in a temporary directory.
+TODO: this will be optimised away in next releases
+
+#### Managed Server Instance
+
+An additional layer of abstraction providing more control over the server's lifecycle:
+```csharp
+using MongoDB.Embedded.Crossplatform;
+using MongoDB.Driver;
+
+using (var manager = new ManagedServerInstance())
+{
+    var instance = manager.Instance;
+    var client = instance.Client;
+    var db = client.GetDatabase("test");
+    var collection = db.GetCollection<YourDataType>("yourCollection");
+    {
+        // perform operations on the collection...
+    }
+    manager.TeardownServer();
+}
+```
+the `ManagedServerInstance` allows for access on a mutably shared server instance, this is partilarly useful when we need
+to preserve the database state across codepaths and we don't necessarily need to create a fresh binary right over again.
+
+The `Server` instance takes care of setting up and tearing down the MongoDB server automatically, along with it's data (everything will be
+stored under a temporary directory that lives as long as the Server instance).
 
 ### Testing with Server
 
-Server is ideal for integration testing, allowing you to run tests against a real MongoDB instance with minimal setup. Here's an example of how you might write tests:
-
+This package comes really handy for integration testing, allowing you to run tests against a real MongoDB instance with minimal setup. Here's an example of how you might write tests:
 ```csharp
 using MongoDB.Driver;
 using MongoDB.Embedded;
@@ -73,7 +100,6 @@ public class MongoDBTests
         using (var embedded = new Server())
         {
             var client = embedded.Client;
-            // Perform tests using the client...
         }
     }
 
