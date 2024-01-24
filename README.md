@@ -6,10 +6,14 @@ A .NET package that provides an easy way to integrate and manage a MongoDB serve
 
 #### 1. Installation
 
-To install Server, you can use NuGet package manager. The following command will install the package into your project:
-
+Nuget pkg manager Installation:
 ```
 Install-Package rhighs.MongoDB.Embedded.CrossPlatform
+```
+
+dotnet-cli:
+```
+$ dotnet add package rhighs.MongoDB.Embedded.CrossPlatform
 ```
 
 ### Example case scenarios
@@ -78,8 +82,8 @@ using (var manager = new ManagedServerInstance())
     manager.TeardownServer();
 }
 ```
-the `ManagedServerInstance` allows for access on a mutably shared server instance, this is partilarly useful when we need
-to preserve the database state across codepaths and we don't necessarily need to create a fresh binary right over again.
+the `ManagedServerInstance` allows for access on a mutably shared server instance, this is of help when we need
+to preserve the database state across code paths and we don't necessarily need to create a fresh binary right over again.
 
 The `Server` instance takes care of setting up and tearing down the MongoDB server automatically, along with it's data (everything will be
 stored under a temporary directory that lives as long as the Server instance).
