@@ -39,5 +39,7 @@ A .NET package that provides an easy way to integrate and manage a MongoDB serve
     <EmbeddedResource Include="osx\mongod_6_arm64" />
     <None Remove="linux\mongod_6_x86-64" />
     <EmbeddedResource Include="linux\mongod_6_x86-64" />
+    <None Remove="linux\mongod_6_arm64" />
+    <EmbeddedResource Include="linux\mongod_6_arm64" />
   </ItemGroup>
 </Project>

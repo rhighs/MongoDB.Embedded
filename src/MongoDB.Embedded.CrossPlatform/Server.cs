@@ -31,10 +31,13 @@ public class Server : IDisposable
 
     public bool Active { get; private set; } = false;
 
-    private string CheckLinuxVersion() => "linux.mongod_6_x86-64";
+    private string CheckLinuxVersion() =>
+        _arch == Architecture.Arm64 || _arch == Architecture.Arm
+            ? "linux.mongod_6_arm64"
+            : "linux.mongod_6_x86-64";
 
     private string CheckOSXVersion() =>
-        _arch == Architecture.Arm64 || _arch == Architecture.Arm64
+        _arch == Architecture.Arm64 || _arch == Architecture.Arm
             ? "osx.mongod_6_arm64"
             : "osx.mongod_6_x86-64";
 
