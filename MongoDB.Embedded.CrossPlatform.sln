@@ -11,6 +11,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{E6851165
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MongoDB.Embedded.CrossPlatform.Tests", "tests\MongoDB.Embedded.CrossPlatform.Tests\MongoDB.Embedded.CrossPlatform.Tests.csproj", "{3230DF61-8B44-4F9E-9C90-F5E30CB1DBF0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MongoDB.Embedded.CrossPlatform.Installer", "src\MongoDB.Embedded.CrossPlatform.Installer\MongoDB.Embedded.CrossPlatform.Installer.csproj", "{8751BD40-3EBE-406E-8A03-0BF718C2A30A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -28,9 +30,14 @@ Global
 		{3230DF61-8B44-4F9E-9C90-F5E30CB1DBF0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3230DF61-8B44-4F9E-9C90-F5E30CB1DBF0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3230DF61-8B44-4F9E-9C90-F5E30CB1DBF0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8751BD40-3EBE-406E-8A03-0BF718C2A30A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8751BD40-3EBE-406E-8A03-0BF718C2A30A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8751BD40-3EBE-406E-8A03-0BF718C2A30A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8751BD40-3EBE-406E-8A03-0BF718C2A30A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{00B31AFF-A71D-4CB1-8CAA-C1DF3FF9BE79} = {A735148C-2DDD-47A5-A91C-D8C5193725B0}
 		{3230DF61-8B44-4F9E-9C90-F5E30CB1DBF0} = {E6851165-8C12-4464-B34E-C231E6183D64}
+		{8751BD40-3EBE-406E-8A03-0BF718C2A30A} = {A735148C-2DDD-47A5-A91C-D8C5193725B0}
 	EndGlobalSection
 EndGlobal

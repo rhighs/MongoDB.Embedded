@@ -145,6 +145,10 @@ public class Server : IDisposable
         }
         else
         {
+            executablePath = Path.Combine(
+                Path.Combine(Directory.GetCurrentDirectory(), "mongod"),
+                "mongod"
+            );
             CopyFilesystemFiles(executablePath, _name);
         }
 
@@ -178,7 +182,7 @@ public class Server : IDisposable
     private void CopyFilesystemFiles(string srcPath, string dstPath)
     {
         var dstStreamPath = Path.Combine(_path, dstPath + PlatformExeExt());
-        using (var resourceStream = new FileStream(srcPath, FileMode.Create, FileAccess.Read))
+        using (var resourceStream = new FileStream(srcPath, FileMode.Open, FileAccess.Read))
         using (var fileStream = new FileStream(dstStreamPath, FileMode.Create, FileAccess.Write))
         {
             resourceStream.CopyTo(fileStream);

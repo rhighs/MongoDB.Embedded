@@ -6,6 +6,15 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\MongoDB.Embedded.CrossPlatform.Installer\MongoDB.Embedded.CrossPlatform.Installer.csproj" />
+  </ItemGroup>
+
+  <UsingTask TaskName="InstallMongodTask" AssemblyFile="..\MongoDB.Embedded.CrossPlatform.Installer\bin\$(Configuration)\net7.0\MongoDB.Embedded.CrossPlatform.Installer.dll" />
+  <Target Name="InstallMongodTask" BeforeTargets="Build">
+    <InstallMongodTask />
+  </Target>
+
   <PropertyGroup>
     <AssemblyTitle>MongoDB.Embedded.CrossPlatform</AssemblyTitle>
     <Version>1.1.2</Version>
@@ -27,19 +36,7 @@ A .NET package that provides an easy way to integrate and manage a MongoDB serve
     <PackageReference Include="MongoDB.Driver" Version="2.23.1" />
   </ItemGroup>
   <ItemGroup>
-    <None Remove="win\mongod_3_x32.exe" />
-    <EmbeddedResource Include="win\mongod_3_x32.exe" />
-    <None Remove="win\mongod_4_2_x64.exe" />
-    <EmbeddedResource Include="win\mongod_4_2_x64.exe" />
-    <None Remove="win\mongod_5_x64.exe" />
-    <EmbeddedResource Include="win\mongod_5_x64.exe" />
-    <None Remove="osx\mongod_6_x86-64" />
-    <EmbeddedResource Include="osx\mongod_6_x86-64" />
-    <None Remove="osx\mongod_6_arm64" />
-    <EmbeddedResource Include="osx\mongod_6_arm64" />
-    <None Remove="linux\mongod_6_x86-64" />
-    <EmbeddedResource Include="linux\mongod_6_x86-64" />
-    <None Remove="linux\mongod_6_arm64" />
-    <EmbeddedResource Include="linux\mongod_6_arm64" />
+    <None Remove="mongod\mongod" />
+    <EmbeddedResource Include="mongod\mongod" />
   </ItemGroup>
 </Project>
