@@ -35,7 +35,8 @@ public class ManagedServerInstanceTests
             var db = client.GetDatabase("test");
             Assert.NotNull(db);
             var collectionNames = db.ListCollectionNames().ToList();
-            if (collectionNames.Contains("testCollection")) {
+            if (collectionNames.Contains("testCollection"))
+            {
                 db.DropCollection("testCollection");
             }
             await db.CreateCollectionAsync("testCollection");

@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 
 namespace MongoDB.Embedded.CrossPlatform;
 
-public class ManagedServerInstance : IDisposable
+public class FlushedServerInstance : IDisposable
 {
     private static Server? _server = null;
 
@@ -15,17 +15,7 @@ public class ManagedServerInstance : IDisposable
 
     private static int _lineNumber = 0;
 
-    public Server Instance
-    {
-        get
-        {
-            return _server != null
-                ? _server
-                : throw new Exception("Server instance is not initialized");
-        }
-    }
-
-    public ManagedServerInstance(
+    public FlushedServerInstance(
         [CallerMemberName] string memberName = "",
         [CallerFilePath] string filePath = "",
         [CallerLineNumber] int lineNumber = 0
@@ -43,11 +33,13 @@ public class ManagedServerInstance : IDisposable
             _logger = loggerFactory.CreateLogger<ManagedServerInstance>();
             _server = new Server(
                 logEnabled: true,
+                initOnly: true,
                 logAction: (string message) =>
                     _logger.LogInformation(
-                        $"[ManagedServerIstance -> {_filePath}:{_memberName}:{_lineNumber}]: {message}"
+                        $"[FlushedServerInstance -> {_filePath}:{_memberName}:{_lineNumber}]: {message}"
                     )
             );
+            _server.Start();
         }
     }
 
@@ -55,8 +47,11 @@ public class ManagedServerInstance : IDisposable
     public void Dispose()
     {
         _logger.LogInformation(
-            $"[ManagedServerIstance -> {_filePath}:{_memberName}:{_lineNumber}]: disposing server manager"
+            $"[FlushedServerInstance -> {_filePath}:{_memberName}:{_lineNumber}]: flushing server instance"
         );
+        _server.FlushDB();
+        _server.FlushLogs();
+        _server.Kill();
     }
 
     public void TeardownServer()
@@ -64,6 +59,4 @@ public class ManagedServerInstance : IDisposable
         _server.Dispose();
     }
 #pragma warning restore CS8602, CS8604
-
-    ~ManagedServerInstance() => Dispose();
 }

@@ -11,26 +11,46 @@ namespace MongoDB.Embedded.CrossPlatform;
 
 public class Server : IDisposable
 {
+#region private
     private Process? _process;
 
     private bool _logEnabled = false;
+
     private readonly int _port = 0;
+
+    private string _dbPath = "";
+
+    private string _logPath = "";
+
     private readonly string _path = "";
+
     private readonly string _name = "";
+
     private readonly int PROCESS_END_TIMEOUT = 10000;
+
     private readonly ManualResetEventSlim _gate = new ManualResetEventSlim(false);
+
     private OSPlatform _platform = OSPlatform.Windows;
+
     private Architecture _arch = Architecture.X64;
 
     private string PlatformExeExt() => _platform == OSPlatform.Windows ? ".exe" : "";
+
+    private string _processFileName = "";
+
+    private string _processArgs = "";
 
     private bool Is64BitSystem() =>
         _arch == Architecture.X64
         || _arch == Architecture.Arm64
         || Environment.Is64BitOperatingSystem;
 
+    private Action<string>? _logAction = null;
+#endregion
+
     public bool Active { get; private set; } = false;
 
+#region load_assembly_data_paths
     private string CheckLinuxVersion() =>
         _arch == Architecture.Arm64 || _arch == Architecture.Arm
             ? "linux.mongod_6_arm64"
@@ -40,115 +60,6 @@ public class Server : IDisposable
         _arch == Architecture.Arm64 || _arch == Architecture.Arm
             ? "osx.mongod_6_arm64"
             : "osx.mongod_6_x86-64";
-
-    private Action<string>? _logAction = null;
-
-    public Server(
-        string? logPath = null,
-        string dbPath = "db",
-        bool logEnabled = false,
-        Action<string>? logAction = null
-    )
-    {
-        logAction ??= (string message) => Console.WriteLine(message);
-        _logAction = logAction;
-
-        _logEnabled = logEnabled;
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-        {
-            _platform = OSPlatform.Linux;
-        }
-        else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-        {
-            _platform = OSPlatform.OSX;
-        }
-        _arch = RuntimeInformation.OSArchitecture;
-
-        var workingDir = $"{Directory.GetCurrentDirectory()}";
-
-        _port = GetRandomUnusedPort();
-        KillMongoDbProcesses(PROCESS_END_TIMEOUT);
-        _name = RandomFileName(7);
-        _path = Path.Combine(workingDir, RandomFileName(12));
-        dbPath = Path.Combine(_path, dbPath);
-        if (logPath == null)
-        {
-            logPath = Path.Combine(_path, "logs");
-        }
-
-        {
-            Directory.CreateDirectory(_path);
-            _logAction($"working path created: {_path}");
-        }
-        {
-            Directory.CreateDirectory(logPath);
-            _logAction($"logging path created: {logPath}");
-        }
-        {
-            Directory.CreateDirectory(dbPath);
-            _logAction($"logging path created: {dbPath}");
-        }
-
-        string format = Is64BitSystem() switch
-        {
-            false
-                => "--dbpath {0} --smallfiles --bind_ip 127.0.0.1 --storageEngine=mmapv1 --port {1}",
-            true => "--dbpath {0} --bind_ip 127.0.0.1 --port {1}"
-        };
-
-        if (logPath != null)
-        {
-            format += " --journal --logpath {2}.log";
-        }
-
-        string executablePath = ResolveExecutablePath();
-        CopyEmbededFiles(executablePath, _name);
-        var processFileName = Path.Combine(_path, _name + PlatformExeExt());
-        _logAction($"embedded data copied at: {processFileName}");
-
-        if (_platform != OSPlatform.Windows)
-        {
-#pragma warning disable CA1416
-            File.SetUnixFileMode(
-                processFileName,
-                UnixFileMode.UserExecute | UnixFileMode.UserRead | UnixFileMode.UserWrite
-            );
-#pragma warning restore CA1416
-        }
-
-        var startInfo = new ProcessStartInfo
-        {
-            FileName = processFileName,
-            WorkingDirectory = _path,
-            Arguments = string.Format(format, dbPath, _port, logPath),
-            UseShellExecute = false,
-            ErrorDialog = false,
-            WindowStyle = ProcessWindowStyle.Hidden,
-            CreateNoWindow = true,
-            RedirectStandardError = true,
-            RedirectStandardInput = false,
-            RedirectStandardOutput = true,
-        };
-
-        if (_platform == OSPlatform.Windows)
-        {
-#pragma warning disable CA1416
-            startInfo.LoadUserProfile = false;
-#pragma warning restore CA1416
-        }
-
-        _process = new Process { StartInfo = startInfo };
-        _process.OutputDataReceived += ProcessOutputDataReceived;
-        _process.ErrorDataReceived += ProcessErrorDataReceived;
-        _process.Start();
-        _process.BeginOutputReadLine();
-        _process.BeginErrorReadLine();
-        _gate.Wait(8000);
-
-        Active = true;
-    }
-
-    ~Server() => Dispose();
 
     private string CheckWindowsVersion()
     {
@@ -172,10 +83,106 @@ public class Server : IDisposable
         }
         return result;
     }
+#endregion
+
+    public Server(
+        string? executablePath = null,
+        string? logPath = null,
+        string dbPath = "db",
+        bool logEnabled = false,
+        bool initOnly = false,
+        Action<string>? logAction = null
+    )
+    {
+        logAction ??= (string message) => Console.WriteLine(message);
+        _logAction = logAction;
+
+        _logEnabled = logEnabled;
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        {
+            _platform = OSPlatform.Linux;
+        }
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        {
+            _platform = OSPlatform.OSX;
+        }
+        _arch = RuntimeInformation.OSArchitecture;
+
+        var workingDir = $"{Directory.GetCurrentDirectory()}";
+
+        _port = GetRandomUnusedPort();
+        KillMongodProcesses(PROCESS_END_TIMEOUT);
+        _name = RandomFileName(7);
+        _path = Path.Combine(workingDir, RandomFileName(12));
+        _dbPath = Path.Combine(_path, dbPath);
+        if (logPath == null)
+        {
+            _logPath = Path.Combine(_path, "logs");
+        }
+
+        Directory.CreateDirectory(_path);
+        Directory.CreateDirectory(_logPath);
+        Directory.CreateDirectory(_dbPath);
+        _logAction($"working path created: {_path}");
+        _logAction($"logging path created: {_logPath}");
+        _logAction($"database path created: {_dbPath}");
+
+        var format = Is64BitSystem() switch
+        {
+            false
+                => "--dbpath {0} --smallfiles --bind_ip 127.0.0.1 --storageEngine=mmapv1 --port {1}",
+            true => "--dbpath {0} --bind_ip 127.0.0.1 --port {1}"
+        };
+
+        if (logPath != null)
+        {
+            format += " --journal --logpath {2}.log";
+        }
+
+        if (executablePath == null) {
+            CopyEmbededFiles(ResolveExecutablePath(), _name);
+        } else {
+            CopyFilesystemFiles(executablePath, _name);
+        }
+
+        _processFileName = Path.Combine(_path, _name + PlatformExeExt());
+        _logAction($"embedded data copied at: {_processFileName}");
+
+        if (_platform != OSPlatform.Windows)
+        {
+#pragma warning disable CA1416
+            File.SetUnixFileMode(
+                _processFileName,
+                UnixFileMode.UserExecute | UnixFileMode.UserRead | UnixFileMode.UserWrite
+            );
+#pragma warning restore CA1416
+        }
+
+        _processArgs = string.Format(format, _dbPath, _port, _logPath);
+        if (!initOnly) {
+            Start();
+        }
+    }
+
+    public void Start() => StartMongodProcess(_processFileName, _processArgs);
+
+    public void Kill() => KillMongodProcesses(PROCESS_END_TIMEOUT);
+
+    ~Server() => Dispose();
+
+#pragma warning disable CS8602
+    private void CopyFilesystemFiles(string srcPath, string dstPath)
+    {
+        var dstStreamPath = Path.Combine(_path, dstPath + PlatformExeExt());
+        using (var resourceStream = new FileStream(srcPath, FileMode.Create, FileAccess.Read))
+        using (var fileStream = new FileStream(dstStreamPath, FileMode.Create, FileAccess.Write))
+        {
+            resourceStream.CopyTo(fileStream);
+        }
+    }
 
     private void CopyEmbededFiles(string FName, string SName)
     {
-#pragma warning disable CS8602
         var dstStreamPath = Path.Combine(_path, SName + PlatformExeExt());
         using (
             var resourceStream = typeof(Server).Assembly.GetManifestResourceStream(
@@ -186,8 +193,8 @@ public class Server : IDisposable
         {
             resourceStream.CopyTo(fileStream);
         }
-#pragma warning restore CS8602
     }
+#pragma warning restore CS8602
 
     private string ResolveExecutablePath()
     {
@@ -271,34 +278,71 @@ public class Server : IDisposable
 
         if (Directory.Exists(_path))
         {
-            _logAction($"deleting working path: {_path}");
+#pragma warning disable CS8602, CS8604
+            _logAction($"deleting working path at {_path}");
+#pragma warning restore CS8602, CS8604
             Directory.Delete(_path, true);
         }
     }
 
+#region process_procs
 #pragma warning disable CS8602, CS8604
-    private void KillMongoDbProcesses(int millisTimeout)
+    private void StartMongodProcess(string processFileName, string args)
     {
-        var processesByName = Process.GetProcessesByName("mongod.exe");
-        foreach (var process in processesByName)
+        var startInfo = new ProcessStartInfo
         {
-            try
+            FileName = processFileName,
+            WorkingDirectory = _path,
+            Arguments = args,
+            UseShellExecute = false,
+            ErrorDialog = false,
+            WindowStyle = ProcessWindowStyle.Hidden,
+            CreateNoWindow = true,
+            RedirectStandardError = true,
+            RedirectStandardInput = false,
+            RedirectStandardOutput = true,
+        };
+
+        if (_platform == OSPlatform.Windows)
+        {
+#pragma warning disable CA1416
+            startInfo.LoadUserProfile = false;
+#pragma warning restore CA1416
+        }
+
+        _process = new Process { StartInfo = startInfo };
+        _process.OutputDataReceived += ProcessOutputDataReceived;
+        _process.ErrorDataReceived += ProcessErrorDataReceived;
+        _process.Start();
+        _process.BeginOutputReadLine();
+        _process.BeginErrorReadLine();
+        _gate.Wait(8000);
+
+        Active = true;
+    }
+
+    private void KillMongodProcesses(int millisTimeout)
+    {
+        foreach (var procname in new string[]{ "mongod.exe", "mongod" }) {
+            var processesByName = Process.GetProcessesByName(procname);
+            foreach (var process in processesByName)
             {
-                if (!process.HasExited)
+                try
                 {
-                    process.Kill();
-                    process.WaitForExit(millisTimeout);
+                    if (!process.HasExited)
+                    {
+                        _logAction($"killing mongod process {procname}");
+                        process.Kill();
+                        process.WaitForExit(millisTimeout);
+                    }
                 }
-            }
-            catch (Exception exception)
-            {
-                var message = string.Format(
-                    "Got exception when killing mongod.exe msg = {0}",
-                    exception.Message
-                );
-                Trace.TraceWarning(message);
-                LogInCurrentStdout(message);
-                _logAction(message);
+                catch (Exception exception)
+                {
+                    var message = $"Got exception when killing {procname} msg = {exception.Message}";
+                    Trace.TraceWarning(message);
+                    LogInCurrentStdout(message);
+                    _logAction(message);
+                }
             }
         }
     }
@@ -328,7 +372,26 @@ public class Server : IDisposable
             _logAction(logMe);
         }
     }
+
+    internal void FlushDB()
+    {
+        _logAction($"flushing database at {_dbPath}");
+        if (Directory.Exists(_dbPath))
+        {
+            Directory.Delete(_dbPath, true);
+        }
+    }
+
+    internal void FlushLogs()
+    {
+        _logAction($"flushing logs at {_dbPath}");
+        if (Directory.Exists(_logPath))
+        {
+            Directory.Delete(_logPath, true);
+        }
+    }
 #pragma warning restore CS8602, CS8604
+#endregion
 
     private void LogInCurrentStdout(string message)
     {
