@@ -11,7 +11,7 @@ namespace MongoDB.Embedded.CrossPlatform;
 
 public class Server : IDisposable
 {
-#region private
+    #region private
     private Process? _process;
 
     private bool _logEnabled = false;
@@ -46,11 +46,11 @@ public class Server : IDisposable
         || Environment.Is64BitOperatingSystem;
 
     private Action<string>? _logAction = null;
-#endregion
+    #endregion
 
     public bool Active { get; private set; } = false;
 
-#region load_assembly_data_paths
+    #region load_assembly_data_paths
     private string CheckLinuxVersion() =>
         _arch == Architecture.Arm64 || _arch == Architecture.Arm
             ? "linux.mongod_6_arm64"
@@ -83,7 +83,7 @@ public class Server : IDisposable
         }
         return result;
     }
-#endregion
+    #endregion
 
     public Server(
         string? executablePath = null,
@@ -139,9 +139,12 @@ public class Server : IDisposable
             format += " --journal --logpath {2}.log";
         }
 
-        if (executablePath == null) {
+        if (executablePath == null)
+        {
             CopyEmbededFiles(ResolveExecutablePath(), _name);
-        } else {
+        }
+        else
+        {
             CopyFilesystemFiles(executablePath, _name);
         }
 
@@ -159,7 +162,8 @@ public class Server : IDisposable
         }
 
         _processArgs = string.Format(format, _dbPath, _port, _logPath);
-        if (!initOnly) {
+        if (!initOnly)
+        {
             Start();
         }
     }
@@ -285,7 +289,7 @@ public class Server : IDisposable
         }
     }
 
-#region process_procs
+    #region process_procs
 #pragma warning disable CS8602, CS8604
     private void StartMongodProcess(string processFileName, string args)
     {
@@ -323,7 +327,8 @@ public class Server : IDisposable
 
     private void KillMongodProcesses(int millisTimeout)
     {
-        foreach (var procname in new string[]{ "mongod.exe", "mongod" }) {
+        foreach (var procname in new string[] { "mongod.exe", "mongod" })
+        {
             var processesByName = Process.GetProcessesByName(procname);
             foreach (var process in processesByName)
             {
@@ -338,7 +343,8 @@ public class Server : IDisposable
                 }
                 catch (Exception exception)
                 {
-                    var message = $"Got exception when killing {procname} msg = {exception.Message}";
+                    var message =
+                        $"Got exception when killing {procname} msg = {exception.Message}";
                     Trace.TraceWarning(message);
                     LogInCurrentStdout(message);
                     _logAction(message);
@@ -391,7 +397,7 @@ public class Server : IDisposable
         }
     }
 #pragma warning restore CS8602, CS8604
-#endregion
+    #endregion
 
     private void LogInCurrentStdout(string message)
     {
