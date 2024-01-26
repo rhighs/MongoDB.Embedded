@@ -41,6 +41,21 @@ public class InstallMongodTask : Microsoft.Build.Utilities.Task
         string os = GetOSPlatform();
         string architecture = RuntimeInformation.OSArchitecture.ToString().ToLower();
 
+        if (architecture == "x64")
+        {
+            architecture = "x86_64";
+        }
+        else if (architecture == "arm64")
+        {
+            architecture = "aarch64";
+        }
+        else
+        {
+            Log.LogWarning(
+                $"donwloading binary for architecture {architecture} might be unsupported! trying..."
+            );
+        }
+
         string version = "6.0.13";
         string baseFileName = $"mongodb-{os}-{architecture}-{version}";
         if (os == "linux")
