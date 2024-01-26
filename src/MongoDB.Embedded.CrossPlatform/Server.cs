@@ -50,41 +50,6 @@ public class Server : IDisposable
 
     public bool Active { get; private set; } = false;
 
-    #region load_assembly_data_paths
-    private string CheckLinuxVersion() =>
-        _arch == Architecture.Arm64 || _arch == Architecture.Arm
-            ? "linux.mongod_6_arm64"
-            : "linux.mongod_6_x86-64";
-
-    private string CheckOSXVersion() =>
-        _arch == Architecture.Arm64 || _arch == Architecture.Arm
-            ? "osx.mongod_6_arm64"
-            : "osx.mongod_6_x86-64";
-
-    private string CheckWindowsVersion()
-    {
-        var windowsBuildNumber = GetWindowsBuildNumber();
-        if (windowsBuildNumber < 7600)
-        {
-            throw new Exception("Windows 7 is not supported yet!");
-        }
-
-        string result = "";
-        if (windowsBuildNumber >= 10000)
-        {
-            result = Is64BitSystem() ? "win.mongod_5_x64.exe" : "win.mongod_3_x32.exe";
-        }
-        else if (
-            windowsBuildNumber >= 7600
-            || windowsBuildNumber >= 9600 && windowsBuildNumber < 10000
-        )
-        {
-            result = Is64BitSystem() ? "win.mongod_4_2_x64.exe" : "win.mongod_3_x32.exe";
-        }
-        return result;
-    }
-    #endregion
-
     public Server(
         string? executablePath = null,
         string? logPath = null,
@@ -139,17 +104,17 @@ public class Server : IDisposable
             format += " --journal --logpath {2}.log";
         }
 
-        if (executablePath == null)
-        {
-            CopyEmbededFiles(ResolveExecutablePath(), _name);
-        }
-        else
+        if (executablePath != null)
         {
             executablePath = Path.Combine(
                 Path.Combine(Directory.GetCurrentDirectory(), "mongod"),
                 "mongod"
             );
             CopyFilesystemFiles(executablePath, _name);
+        }
+        else
+        {
+            CopyEmbededFiles("mongod.mongod", _name);
         }
 
         _processFileName = Path.Combine(_path, _name + PlatformExeExt());
@@ -191,6 +156,16 @@ public class Server : IDisposable
 
     private void CopyEmbededFiles(string FName, string SName)
     {
+        var assembly = typeof(Server).Assembly;
+
+        // Get all embedded resource names
+        var resourceNames = assembly.GetManifestResourceNames();
+        Console.WriteLine("Available embedded resources:");
+        foreach (var resourceName in resourceNames)
+        {
+            Console.WriteLine(resourceName);
+        }
+
         var dstStreamPath = Path.Combine(_path, SName + PlatformExeExt());
         using (
             var resourceStream = typeof(Server).Assembly.GetManifestResourceStream(
@@ -203,24 +178,6 @@ public class Server : IDisposable
         }
     }
 #pragma warning restore CS8602
-
-    private string ResolveExecutablePath()
-    {
-        string result = "";
-        if (_platform == OSPlatform.OSX)
-        {
-            result = CheckOSXVersion();
-        }
-        else if (_platform == OSPlatform.Linux)
-        {
-            result = CheckLinuxVersion();
-        }
-        else
-        {
-            result = CheckWindowsVersion();
-        }
-        return result;
-    }
 
     public MongoClientSettings Settings
     {
@@ -409,42 +366,5 @@ public class Server : IDisposable
         {
             Console.WriteLine($"[Rhighs.MongoDB.Embedded | INFO]: {message}");
         }
-    }
-
-    internal static int GetWindowsBuildNumber()
-    {
-#pragma warning disable CA1416
-        var subKey = @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\";
-        var keyName = "CurrentBuildNumber";
-        using (var rkSubKey = Registry.LocalMachine.OpenSubKey(subKey))
-        {
-            if (rkSubKey == null)
-                throw new Exception(
-                    string.Format(
-                        @"Error while reading registry key: {0}\{1} does not exist!",
-                        subKey,
-                        keyName
-                    )
-                );
-
-            try
-            {
-                var result = rkSubKey.GetValue(keyName);
-                rkSubKey.Close();
-                return Convert.ToInt32(result);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(
-                    string.Format(
-                        "Error while reading registry key: {0} param: {1}. ErrorMessage: {2}",
-                        subKey,
-                        keyName,
-                        ex.Message
-                    )
-                );
-            }
-        }
-#pragma warning restore CA1416
     }
 }

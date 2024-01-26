@@ -7,20 +7,32 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MongoDB.Embedded.CrossPlatform.Installer\MongoDB.Embedded.CrossPlatform.Installer.csproj" />
+    <ProjectReference
+      Include="..\MongoDB.Embedded.CrossPlatform.Installer\MongoDB.Embedded.CrossPlatform.Installer.csproj" />
   </ItemGroup>
 
-  <UsingTask TaskName="InstallMongodTask" AssemblyFile="..\MongoDB.Embedded.CrossPlatform.Installer\bin\$(Configuration)\net7.0\MongoDB.Embedded.CrossPlatform.Installer.dll" />
-  <Target Name="InstallMongodTask" BeforeTargets="Build">
+  <UsingTask TaskName="InstallMongodTask"
+    AssemblyFile="..\MongoDB.Embedded.CrossPlatform.Installer\bin\$(Configuration)\net7.0\MongoDB.Embedded.CrossPlatform.Installer.dll" />
+  <Target Name="InstallMongodTask" BeforeTargets="BeforeCompile">
     <InstallMongodTask />
   </Target>
+
+  <ItemGroup>
+    <None Remove="mongod\mongod" />
+    <EmbeddedResource Include="mongod\mongod" />
+  </ItemGroup>
 
   <PropertyGroup>
     <AssemblyTitle>MongoDB.Embedded.CrossPlatform</AssemblyTitle>
     <Version>1.1.2</Version>
     <Authors>Roberto Montalti</Authors>
     <Description>
-A .NET package that provides an easy way to integrate and manage a MongoDB server within your .NET applications. It abstracts the complexities of setting up and running a MongoDB instance, allowing the embedded MongoDB executable to be packaged directly within your application's DLLs. This package supports Windows, Linux, and OSX platforms, ensuring a seamless MongoDB experience across different environments. Such a package is particularly useful for testing purposes, in particular, intergration testing.
+      A .NET package that provides an easy way to integrate and manage a MongoDB server within your
+      .NET applications. It abstracts the complexities of setting up and running a MongoDB instance,
+      allowing the embedded MongoDB executable to be packaged directly within your application's
+      DLLs. This package supports Windows, Linux, and OSX platforms, ensuring a seamless MongoDB
+      experience across different environments. Such a package is particularly useful for testing
+      purposes, in particular, intergration testing.
     </Description>
     <PackageTags>MongoDB, MongoDB.Embedded, MongoDB.Embedded.CrossPlatform</PackageTags>
     <PackageId>rhighs.MongoDB.Embedded.CrossPlatform</PackageId>
@@ -35,8 +47,5 @@ A .NET package that provides an easy way to integrate and manage a MongoDB serve
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
     <PackageReference Include="MongoDB.Driver" Version="2.23.1" />
   </ItemGroup>
-  <ItemGroup>
-    <None Remove="mongod\mongod" />
-    <EmbeddedResource Include="mongod\mongod" />
-  </ItemGroup>
+
 </Project>
