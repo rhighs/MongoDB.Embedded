@@ -11,20 +11,27 @@ public class InstallMongodTask : Microsoft.Build.Utilities.Task
 
     public override bool Execute()
     {
-        try
+        if (!ShouldSkipInstallation())
         {
-            var path = DownloadMongoDBPackageAsync().GetAwaiter().GetResult();
-            Log.LogMessage(MessageImportance.High, $"Installing package {path}...");
-            InstallMongoDB(path, "mongod");
+            try
+            {
+                var path = DownloadMongoDBPackageAsync().GetAwaiter().GetResult();
+                Log.LogMessage(MessageImportance.High, $"Installing package {path}...");
+                InstallMongoDB(path, "mongod");
+            }
+            catch (Exception ex)
+            {
+                Log.LogErrorFromException(ex, true);
+                return false;
+            }
         }
-        catch (Exception ex)
-        {
-            Log.LogErrorFromException(ex, true);
-            return false;
-        }
+
         return true;
     }
 
+    public bool ShouldSkipInstallation() =>
+        Directory.Exists("mongod") && File.Exists(Path.Combine("mongod", "mongod"));
+    
     public async Task<string> DownloadMongoDBPackageAsync()
     {
         string baseUrl = "https://fastdl.mongodb.org/";

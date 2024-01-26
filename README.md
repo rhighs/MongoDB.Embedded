@@ -16,6 +16,14 @@ dotnet-cli:
 $ dotnet add package rhighs.MongoDB.Embedded.CrossPlatform
 ```
 
+## How mongod binaries are handled
+
+A custom MSBuild task, executed prior to compilation, is designated to download a version of `mongod` that is compatible with the operating system and CPU architecture of the user. This task triggers every time a project that incorporates this package is built. It specifically downloads and sets up a `mongod` installation package, currently targeting version 6.0.13. Notably, this process is conducted once for each project, thereby avoiding repetition across subsequent builds.
+
+Below is the comprehensive list of `mongod` community versions as indicated by the [installer](src/MongoDB.Embedded.CrossPlatform.Installer/Installer.cs).
+
+[MongoDB Community Releases](https://www.mongodb.com/download-center/community/releases)
+
 ### Example case scenarios
 
 #### Basic Operations
