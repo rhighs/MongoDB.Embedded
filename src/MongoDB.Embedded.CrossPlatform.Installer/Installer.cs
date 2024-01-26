@@ -1,5 +1,6 @@
 using System.IO.Compression;
 using System.Runtime.InteropServices;
+using System.Text;
 using ICSharpCode.SharpZipLib.GZip;
 using ICSharpCode.SharpZipLib.Tar;
 using Microsoft.Build.Framework;
@@ -29,10 +30,10 @@ public class InstallMongodTask : Microsoft.Build.Utilities.Task
         string baseUrl = "https://fastdl.mongodb.org/";
         string fileUrl = baseUrl + GetPackagePath();
 
-        Console.WriteLine($"Downloading MongoDB package from: {fileUrl}");
+        Log.LogMessage(MessageImportance.High, $"Downloading MongoDB package from: {fileUrl}");
         byte[] fileBytes = await client.GetByteArrayAsync(fileUrl);
         string localFileName = GetLocalFileName(fileUrl);
-        await System.IO.File.WriteAllBytesAsync(localFileName, fileBytes);
+        await File.WriteAllBytesAsync(localFileName, fileBytes);
         return localFileName;
     }
 
@@ -45,11 +46,7 @@ public class InstallMongodTask : Microsoft.Build.Utilities.Task
         {
             architecture = "x86_64";
         }
-        else if (architecture == "arm64")
-        {
-            architecture = "aarch64";
-        }
-        else
+        else if (architecture != "arm64")
         {
             Log.LogWarning(
                 $"donwloading binary for architecture {architecture} might be unsupported! trying..."
@@ -81,19 +78,24 @@ public class InstallMongodTask : Microsoft.Build.Utilities.Task
     private string GetOSPlatform()
     {
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
             return "windows";
+        }
+
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        {
             return "linux";
+        }
+
         if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        {
             return "osx";
+        }
+
         throw new PlatformNotSupportedException("Operating system not supported");
     }
 
-    private string GetLocalFileName(string fileUrl)
-    {
-        Uri uri = new Uri(fileUrl);
-        return uri.Segments[^1];
-    }
+    private string GetLocalFileName(string fileUrl) => new Uri(fileUrl).Segments[^1];
 
     public void InstallMongoDB(string packagePath, string destinationPath)
     {
@@ -125,16 +127,23 @@ public class InstallMongodTask : Microsoft.Build.Utilities.Task
         string destinationExecutablePath = Path.Combine(destinationPath, executableName);
         File.Move(executablePath, destinationExecutablePath, true);
 
-        Console.WriteLine($"MongoDB has been installed to {destinationExecutablePath}");
+        Log.LogMessage(
+            MessageImportance.High,
+            $"MongoDB has been installed to {destinationExecutablePath}"
+        );
     }
 
+#pragma warning disable CS8604
     private string UnpackFile(string packagePath)
     {
         string unpackedDirectory = Path.Combine(
             Path.GetDirectoryName(packagePath),
             Path.GetFileNameWithoutExtension(packagePath)
         );
-        Console.WriteLine($"Creating unpack dir {unpackedDirectory} for package {packagePath}...");
+        Log.LogMessage(
+            MessageImportance.High,
+            $"Creating unpack dir {unpackedDirectory} for package {packagePath}..."
+        );
         Directory.CreateDirectory(unpackedDirectory);
 
         if (packagePath.EndsWith(".tgz"))
@@ -152,6 +161,7 @@ public class InstallMongodTask : Microsoft.Build.Utilities.Task
 
         return unpackedDirectory;
     }
+#pragma warning restore CS8604
 
     private void ExtractTgz(string gzArchiveName, string destFolder)
     {
@@ -162,7 +172,12 @@ public class InstallMongodTask : Microsoft.Build.Utilities.Task
 
         using (Stream inStream = File.OpenRead(gzArchiveName))
         using (Stream gzipStream = new GZipInputStream(inStream))
-        using (TarArchive tarArchive = TarArchive.CreateInputTarArchive(gzipStream))
+        using (
+            TarArchive tarArchive = TarArchive.CreateInputTarArchive(
+                gzipStream,
+                nameEncoding: Encoding.ASCII
+            )
+        )
         {
             tarArchive.ExtractContents(destFolder);
         }
