@@ -123,10 +123,14 @@ public class Server : IDisposable
         if (_platform != OSPlatform.Windows)
         {
 #pragma warning disable CA1416
-            File.SetUnixFileMode(
-                _processFileName,
-                UnixFileMode.UserExecute | UnixFileMode.UserRead | UnixFileMode.UserWrite
-            );
+            if (!Chmod(_processFileName))
+            {
+                throw new Exception($"could not edit file mode for process file: {_processFileName}");
+            }
+            // File.SetUnixFileMode(
+            //     _processFileName,
+            //     UnixFileMode.UserExecute | UnixFileMode.UserRead | UnixFileMode.UserWrite
+            // );
 #pragma warning restore CA1416
         }
 
@@ -365,6 +369,23 @@ public class Server : IDisposable
         if (_logEnabled)
         {
             Console.WriteLine($"[Rhighs.MongoDB.Embedded | INFO]: {message}");
+        }
+    }
+
+    // starting a process is sorta needed, net6.0 does not provide useful APIs for this yet
+    private bool Chmod(string filePath, string permissions = "700")
+    {
+        try
+        {
+            using (Process proc = Process.Start("/bin/bash", $"-c \"chmod {permissions} {filePath}\""))
+            {
+                proc.WaitForExit();
+                return proc.ExitCode == 0;
+            }
+        }
+        catch
+        {
+            return false;
         }
     }
 }

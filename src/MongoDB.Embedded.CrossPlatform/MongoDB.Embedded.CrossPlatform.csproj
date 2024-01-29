@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <RootNamespace>MongoDB.Embedded.CrossPlatform</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -9,12 +9,12 @@
   <ItemGroup>
     <ProjectReference
       Include="..\MongoDB.Embedded.CrossPlatform.Installer\MongoDB.Embedded.CrossPlatform.Installer.csproj"
-      PrivateAssets="All"
+      PrivateAssets="all"
     />
   </ItemGroup>
 
   <UsingTask TaskName="InstallMongodTask"
-    AssemblyFile="..\MongoDB.Embedded.CrossPlatform.Installer\bin\$(Configuration)\net7.0\MongoDB.Embedded.CrossPlatform.Installer.dll" />
+    AssemblyFile="..\MongoDB.Embedded.CrossPlatform.Installer\bin\$(Configuration)\net6.0\MongoDB.Embedded.CrossPlatform.Installer.dll" />
   <Target Name="InstallMongodTask" BeforeTargets="BeforeCompile">
     <InstallMongodTask />
   </Target>
@@ -26,7 +26,7 @@
 
   <PropertyGroup>
     <AssemblyTitle>MongoDB.Embedded.CrossPlatform</AssemblyTitle>
-    <Version>1.2.1</Version>
+    <Version>1.2.2</Version>
     <Authors>Roberto Montalti</Authors>
     <Description>
       A .NET package that provides an easy way to integrate and manage a MongoDB server within your
