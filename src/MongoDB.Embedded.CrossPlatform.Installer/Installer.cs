@@ -64,11 +64,9 @@ public class InstallMongodTask : Microsoft.Build.Utilities.Task
         string baseFileName = $"mongodb-{os}-{architecture}-{version}";
         if (os == "linux")
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                string distro = "ubuntu2004";
-                baseFileName = $"mongodb-linux-{architecture}-{distro}-{version}";
-            }
+            string distro = "ubuntu2004";
+            var linuxArchitecture = architecture == "arm64" ? "aarch64" : architecture;
+            baseFileName = $"mongodb-linux-{linuxArchitecture}-{distro}-{version}";
         }
         else if (os == "windows")
         {
