@@ -50,6 +50,22 @@ public class Server : IDisposable
 
     public bool Active { get; private set; } = false;
 
+    private static (string os, string arch) GetPlaformInfo()
+    {
+        string os = "windows";
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        {
+            os = "linux";
+        }
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        {
+            os = "osx";
+        }
+
+        string architecture = RuntimeInformation.OSArchitecture.ToString().ToLower();
+        return (os, architecture);
+    }
+
     public Server(
         string? executablePath = null,
         string? logPath = null,
@@ -137,6 +153,8 @@ public class Server : IDisposable
         _processArgs = string.Format(format, _dbPath, _port, _logPath);
         if (!initOnly)
         {
+            (string os, string architecture) = GetPlaformInfo();
+            _logAction($"Starting mongod server for platform {os}-{architecture}");
             Start();
         }
     }

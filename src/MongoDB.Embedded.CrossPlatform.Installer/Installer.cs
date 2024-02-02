@@ -44,10 +44,31 @@ public class InstallMongodTask : Microsoft.Build.Utilities.Task
         return localFileName;
     }
 
+    private static (string os, string arch) GetPlaformInfo()
+    {
+        string os = "windows";
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        {
+            os = "linux";
+        }
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        {
+            os = "osx";
+        }
+
+        string architecture = RuntimeInformation.OSArchitecture.ToString().ToLower();
+        return (os, architecture);
+    }
+
     private string GetPackagePath()
     {
-        string os = GetOSPlatform();
-        string architecture = RuntimeInformation.OSArchitecture.ToString().ToLower();
+        (string os, string architecture) = GetPlaformInfo();
+        if (architecture != "arm64" && architecture != "x86_64")
+        {
+            Log.LogWarning(
+                $"donwloading binary for architecture {architecture} might be unsupported! trying..."
+            );
+        }
 
         if (architecture == "x64")
         {
