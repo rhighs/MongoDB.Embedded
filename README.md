@@ -6,15 +6,12 @@ A .NET package that provides an easy way to integrate and manage a MongoDB serve
 
 #### 1. Installation
 
-Nuget pkg manager Installation:
+Installing this as a dotnet package is discouraged as the binary is already built containing an unlikely working mongod version for your
+system. Instead it is encouraged to add this package as a git submodule into your project:
+```bash
+$ git submodule add https://github.com/rhighs/MongoDB.Embedded.CrossPlatform.git
 ```
-Install-Package rhighs.MongoDB.Embedded.CrossPlatform
-```
-
-dotnet-cli:
-```
-$ dotnet add package rhighs.MongoDB.Embedded.CrossPlatform
-```
+NOTE: this ensures the installer task runs as part of your build steps
 
 ## How mongod binaries are handled
 
