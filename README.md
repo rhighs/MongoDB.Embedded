@@ -1,5 +1,4 @@
-## MongoDB.Embedded.CrossPlatform
-
+## MongoDB.Embedded
 A .NET package that provides an easy way to integrate and manage a MongoDB server within your .NET applications. It abstracts the complexities of setting up and running a MongoDB instance, allowing the embedded MongoDB executable to be packaged directly within your application's DLLs. This package supports Windows, Linux, and OSX platforms, ensuring a seamless MongoDB experience across different environments. Such a package is particularly useful for testing purposes, in particular, intergration testing.
 
 ### Getting Started
